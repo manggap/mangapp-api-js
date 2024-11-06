@@ -474,3 +474,106 @@ export const getReadChapter = async (ctx: Context) => {
     return responseApi(500, er.message, []);
   }
 };
+
+export const getGenreList = async (ctx: Context) => {
+  try {
+    const response = await AxiosService(baseUrl);
+    if (response.status === 200) {
+      const $ = cheerio.load(response.data);
+      const element = $("#content > .wrapper");
+      const komikList: any = [];
+      element.find("#sidebar > .section > ul.genre > li").each((i, data) => {
+        const title = $(data).find("a").text().trim();
+        const href = $(data).find("a").attr("href");
+        komikList.push({
+          title,
+          href: href?.replace(`${baseUrl}/genres`, "").trim(),
+        });
+      });
+      return responseApi(200, "success", komikList);
+    }
+    return responseApi(response.status, "failed");
+  } catch (er: any) {
+    console.log(er);
+    return responseApi(500, er.message);
+  }
+};
+
+export const getGenre = async (ctx: Context) => {
+  try {
+    const { genre, page } = ctx.params;
+
+    const response = await AxiosService(
+      `${baseUrl}/genres/${genre}/page/${page}`
+    );
+
+    console.log(`${baseUrl}/genres/${genre}/page/${page}`);
+
+    if (response.status === 200) {
+      const $ = cheerio.load(response.data);
+      const element = $("#content > .wrapper > .postbody > .bixbox");
+      const komikList: any[] = [];
+
+      // Get the current page from the pagination element
+      const checkPagination = element
+        .find(".listupd > .list-update_items > .pagination > .current")
+        .text()
+        .trim();
+
+      // Determine the length of pagination
+      const paginationItems = element.find(".pagination > .page-numbers");
+      let length_page = paginationItems.eq(-2).text().trim(); // Second last item, assuming last item is "Next"
+
+      element
+        .find(
+          ".listupd > .list-update_items > .list-update_items-wrapper > .list-update_item"
+        )
+        .each((i, data) => {
+          const title = $(data)
+            .find("a > .list-update_item-info > h3")
+            .text()
+            .trim();
+          const chapter = $(data)
+            .find("a > .list-update_item-info > .other > .chapter")
+            .text()
+            .trim();
+          const type = $(data)
+            .find("a > .list-update_item-image > .type")
+            .text()
+            .trim();
+          const thumbnail =
+            $(data).find("a > .list-update_item-image > img").attr("src") ||
+            $(data).find("a > .list-update_item-image > img").attr("data-src");
+
+          const rating = $(data)
+            .find(
+              "a > .list-update_item-info > .other > .rate > .rating > .numscore"
+            )
+            .text()
+            .trim();
+          const href = $(data).find("a").attr("href");
+
+          komikList.push({
+            title,
+            chapter,
+            type,
+            href: href?.replace(`${baseUrl}/komik`, "").trim(),
+            rating,
+            thumbnail,
+          });
+        });
+
+      return {
+        status: "success",
+        current_page:
+          checkPagination === "" ? 1 : parseInt(checkPagination, 10),
+        length_page: length_page === "" ? 1 : parseInt(length_page, 10),
+        data: komikList,
+      };
+    }
+
+    return responseApi(response.status, "Unknown error occurred", []);
+  } catch (error: any) {
+    return responseApi(500, error.message, []);
+  }
+};
