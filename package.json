@@ -1,8 +1,14 @@
 {
   "name": "mangapp-api",
   "version": "1.0.50",
+  "author": {
+    "name": "muhamad alfin pratama",
+    "url": "https://muhamadalfinpratama.vercel.app"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "bun install",
+    "build": "bun build ./src/index.ts --target=bun --outfile=server.js",
+    "start": "bun run server.js",
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
