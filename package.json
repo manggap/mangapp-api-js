@@ -6,8 +6,8 @@
     "url": "https://muhamadalfinpratama.vercel.app"
   },
   "scripts": {
-    "install": "bun install",
-    "build": "bun build ./src/index.ts --target=bun --outfile=server.js",
+    "install": "bun install && bun builds",
+    "builds": "bun build ./src/index.ts --target=bun --outfile=server.js && bun start",
     "start": "bun run server.js",
     "dev": "bun run --watch src/index.ts"
   },
